@@ -14,5 +14,5 @@ input {
 }
 
 button {
-    @apply px-9 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none w-[350px] mt-8
+    @apply px-9 py-4 bg-blue-500 text-white text-[18px] rounded-lg focus:outline-none w-[350px] mt-8
 }
