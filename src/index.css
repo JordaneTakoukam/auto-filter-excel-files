@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+
+label, h1 {
+    @apply text-[20px] w-[250px]
+}
+
+input {
+    @apply px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md w-[350px]
+}
+
+button {
+    @apply px-9 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none w-[350px] mt-8
+}
