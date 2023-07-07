@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTrash, FaPlay, FaDownload } from 'react-icons/fa';
 import * as XLSX from 'xlsx';
-import fileDownload from 'js-file-download';
 import { FaWhatsapp } from 'react-icons/fa';
 
 function App() {
+
+
+
+
+
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [code, setcode] = useState('');
   const [filterValues, setFilterValues] = useState([]);
   const [outputFilename, setOutputFilename] = useState('');
   const [downloadAvailable, setDownloadAvailable] = useState(false);
+
+
+  const [allFieldsAvailable, setAllFieldsAvailable] = useState(false);
+
+  // Utilisez un effet pour mettre à jour la disponibilité du bouton lorsque les champs changent
+  useEffect(() => {
+    const checkFieldsAvailability = () => {
+      if (selectedFiles.length > 0 && code !== '' && filterValues.length > 0 && outputFilename !== '') {
+        setAllFieldsAvailable(true);
+      } else {
+        setAllFieldsAvailable(false);
+      }
+    };
+
+    checkFieldsAvailability();
+  }, [selectedFiles, code, filterValues, outputFilename]);
+
 
 
 
@@ -39,10 +60,13 @@ function App() {
     setSelectedFiles(files);
   };
 
-
+  const [newWorkbook, setNewWorkbook] = useState(null);
 
   const handleScriptCall = () => {
     if (selectedFiles.length > 0) {
+      setLoading(true);
+      setDownloadAvailable(false);
+
       const resultatsFiltres = [];
 
       selectedFiles.forEach((file, index) => {
@@ -56,7 +80,6 @@ function App() {
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
           const colonneCP = jsonData[0].indexOf(code);
-
 
           const lignesFiltrees = jsonData.filter((ligne, index) => {
             if (index === 0 && isFirstFile) {
@@ -72,46 +95,56 @@ function App() {
           });
           resultatsFiltres.push(lignesFiltrees);
 
-
           // Fusionner tous les résultats filtrés en une seule liste
           const lignesFiltreesFinales = resultatsFiltres.flat();
 
-          // Créer une nouvelle feuille de calcul avec les lignes filtrées
-          const newWorksheet = XLSX.utils.aoa_to_sheet(lignesFiltreesFinales);
+          if (index === selectedFiles.length - 1) {
+            // Créer une nouvelle feuille de calcul avec les lignes filtrées
+            const newWorksheet = XLSX.utils.aoa_to_sheet(lignesFiltreesFinales);
 
-          // Créer un nouveau classeur Excel avec la nouvelle feuille de calcul
-          const newWorkbook = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Résultats');
+            // Créer un nouveau classeur Excel avec la nouvelle feuille de calcul
+            const book = XLSX.utils.book_new();
+            setNewWorkbook(book);
 
-          // Enregistrer le fichier Excel de résultats
-          XLSX.writeFile(newWorkbook, outputFilename + '.xlsx');
+            XLSX.utils.book_append_sheet(book, newWorksheet, 'Résultats');
 
-          // Déclencher le téléchargement du fichier généré
-          const fileData = XLSX.write(newWorkbook, { type: 'buffer', bookType: 'xlsx' });
-          fileDownload(fileData, outputFilename + '.xlsx');
 
-          console.log('Fichier de résultats créé avec succès.');
-          // setDownloadAvailable(true);
-        };
+            setDownloadAvailable(true);
+            setLoading(false);
+
+            // dozwnload
+            const excelBuffer = XLSX.write(book, { bookType: 'xlsx', type: 'array' });
+
+            const downloadLink = document.createElement('a');
+            const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            downloadLink.href = url;
+            downloadLink.download = outputFilename + '.xlsx';
+            downloadLink.click();
+            URL.revokeObjectURL(url);
+
+
+          }
+        }
 
         reader.readAsArrayBuffer(file);
       });
     }
   };
 
-
   const handleDownload = () => {
-    if (downloadAvailable) {
-      // Téléchargement du fichier généré
-      const url = window.URL.createObjectURL(new Blob([outputFilename + '.xlsx']));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', outputFilename + '.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      // setDownloadAvailable(false);
-    };
-  }
+    const excelBuffer = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
+
+    const downloadLink = document.createElement('a');
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    downloadLink.href = url;
+    downloadLink.download = outputFilename + '.xlsx';
+    downloadLink.click();
+    URL.revokeObjectURL(url);
+
+  };
+
 
   const handleClearApp = () => {
     setDownloadAvailable(false);
@@ -121,9 +154,10 @@ function App() {
     setFilterValues([]);
   };
 
-  const phoneNumber = '+2365699751';
-  const whatsappLink = `https://api.whatsapp.com/send?phone=${phoneNumber}`;
+  const phoneNumber = '+237657699751';
+  const whatsappLink = 'https://api.whatsapp.com/send?phone=' + phoneNumber;
 
+  const [loading, setLoading] = useState(false);
 
 
   return (
@@ -132,7 +166,8 @@ function App() {
 
       <div className='flex flex-row items-center justify-center'>
         <button
-          className={`mx-auto mb-8 ml-[360px] ${downloadAvailable ? 'bg-green-500' : 'bg-green-200 cursor-not-allowed  text-gray-500'}`}
+          id="downloadLink"
+          className={`mx-auto mb-8 ml-[360px] ${downloadAvailable ? 'bg-green-500 animate-pulse' : 'bg-green-200 cursor-not-allowed  text-gray-500'}`}
           onClick={handleDownload}
           disabled={!downloadAvailable}
         >
@@ -202,14 +237,30 @@ function App() {
               />
             </div>
 
-            <button className='mx-auto mt-[200px] hover:bg-blue-700 ' onClick={handleScriptCall}>
-              <div className='flex flex-row items-center justify-center pr-2'>
-                <div className='text-[14px] pr-5'>
-                  <FaPlay />
-                </div>
-                Démarrer
-              </div>
-            </button>
+
+            <div className='bg-transparent flex flex-col items-center justify-center h-[200px]'>
+              {
+                loading ? <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
+
+
+                  : <button
+                    className={`mx-auto ${allFieldsAvailable ? 'bg-blue-500 text-white' : 'bg-blue-200 cursor-not-allowed text-gray-500'}`}
+                    onClick={handleScriptCall}
+                    disabled={!allFieldsAvailable}
+                  >
+                    <div className='flex flex-row items-center justify-center pr-2'>
+                      <div className='text-[16px] pr-5'>
+                        <FaPlay />
+                      </div>
+                      Démarrer
+                    </div>
+                  </button>
+              }
+            </div>
+
+
+
+
 
 
           </div>
@@ -222,7 +273,6 @@ function App() {
         <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className='flex flex-row items-center justify-center font-bold text-green-600 underline'>
           <div className='text-[25px] pr-1'>
             <FaWhatsapp /> </div>Contact  me on WhatsApp
-
         </a>
       </div>
     </div>
