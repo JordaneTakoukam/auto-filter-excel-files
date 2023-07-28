@@ -10,9 +10,6 @@ label, h1 {
 }
 
 input {
-    @apply px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md w-[350px]
+    @apply px-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md w-full py-3
 }
 
-button {
-    @apply px-9 py-4 bg-blue-500 text-white text-[18px] rounded-lg focus:outline-none w-[350px] mt-8
-}
