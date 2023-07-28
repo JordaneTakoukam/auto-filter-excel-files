@@ -38,7 +38,7 @@ function CustomFilterBy({
                             </div>
                             <input
                                 type="text"
-                                placeholder='ex : 1, 2, 3, 05, 237, 33'
+                                placeholder='ex : 1, 2, 3, 05, 237, 15451256, etc..'
                                 value={inputPhoneValue.join(', ')}
                                 onChange={handleOnChangePhone}
                             />
@@ -58,7 +58,7 @@ function CustomFilterBy({
                                 </div>
                                 <input
                                     type="text"
-                                    placeholder='ex : 01, 02, 03, 05, 05, 1, 2'
+                                    placeholder='ex : 01, 02, 03, 05, 05, 1, 2, 60000, etc..'
                                     value={inputCPvalue.join(', ')}
                                     onChange={handleOnChangeCP}
                                 />

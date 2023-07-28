@@ -88,12 +88,23 @@ function App() {
             if (index === 0 && isFirstFile) {
               return true; // Conserver l'en-tête uniquement pour le premier fichier
             } else {
+              // const codePostal = String(ligne[colonneCP]);
+              // return inputCPvalue.some(
+              //   (cp) =>
+              //     codePostal.startsWith(cp[0] === '0' ? cp[1] : cp) &&
+              //     (cp[0] === '0' ? codePostal.length === 4 : codePostal.length === 5)
+              // );
               const codePostal = String(ligne[colonneCP]);
-              return inputCPvalue.some(
-                (cp) =>
-                  codePostal.startsWith(cp[0] === '0' ? cp[1] : cp) &&
-                  (cp[0] === '0' ? codePostal.length === 4 : codePostal.length === 5)
-              );
+
+              // Compléter le code postal avec des zéros à partir de l'avant si sa longueur est inférieure à 5
+              const paddedCodePostal = codePostal.padStart(5, '0');
+
+              return inputCPvalue.some((cp) => {
+                // Si le préfixe du code postal commence par '0', comparer sans le '0' initial
+                const prefix = cp[0] === '0' ? cp.slice(1) : cp;
+                return paddedCodePostal.startsWith(prefix);
+              });
+
             }
           });
           resultatsFiltres.push(lignesFiltrees);
@@ -161,10 +172,8 @@ function App() {
               return true; // Conserver l'en-tête uniquement pour le premier fichier
             } else {
               const phoneIndex = String(ligne[indexDuHeadPhone]);
-              return inputPhoneValue.some(
-                (cp) =>
-                  phoneIndex.startsWith(cp[0])
-              );
+              return inputPhoneValue.some((cp) => phoneIndex.startsWith(cp) && phoneIndex.length <= 10);
+
             }
           });
           resultatsFiltres.push(lignesFiltrees);
