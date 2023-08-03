@@ -55,7 +55,7 @@ function App() {
     const files = Array.from(event.target.files);
     const excelFiles = files.filter(file => {
       const fileName = file.name.toLowerCase();
-      return fileName.endsWith('.xls') || fileName.endsWith('.xlsx');
+      return fileName;
     });
 
     setfichierSelectionner(excelFiles);
@@ -65,7 +65,9 @@ function App() {
 
   const [newWorkbook, setNewWorkbook] = useState(null);
 
-  const filterByPostalCode = () => {
+
+
+  const filterByPostalCodeXLS = () => {
     if (fichierSelectionner.length > 0) {
       setLoading(true);
       setDownloadAvailable(false);
@@ -78,9 +80,12 @@ function App() {
 
         reader.onload = (e) => {
           const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          let workbook, worksheet, jsonData;
+
+          // For Excel (.xlsx) files
+          workbook = XLSX.read(data, { type: 'array' });
+          worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
           const colonneCP = jsonData[0].indexOf(enteteDuFichier);
 
@@ -88,12 +93,6 @@ function App() {
             if (index === 0 && isFirstFile) {
               return true; // Conserver l'en-tête uniquement pour le premier fichier
             } else {
-              // const codePostal = String(ligne[colonneCP]);
-              // return inputCPvalue.some(
-              //   (cp) =>
-              //     codePostal.startsWith(cp[0] === '0' ? cp[1] : cp) &&
-              //     (cp[0] === '0' ? codePostal.length === 4 : codePostal.length === 5)
-              // );
               const codePostal = String(ligne[colonneCP]);
 
               // Compléter le code postal avec des zéros à partir de l'avant si sa longueur est inférieure à 5
@@ -101,10 +100,10 @@ function App() {
 
               return inputCPvalue.some((cp) => {
                 // Si le préfixe du code postal commence par '0', comparer sans le '0' initial
-                const prefix = cp[0] === '0' ? cp.slice(1) : cp;
+                // const prefix = inputCPvalue[0] === '0' ? cp.slice(1) : cp;
+                const prefix = inputCPvalue[0] === '0' ? cp.slice(inputCPvalue.length) : cp;
                 return paddedCodePostal.startsWith(prefix);
               });
-
             }
           });
           resultatsFiltres.push(lignesFiltrees);
@@ -122,7 +121,6 @@ function App() {
 
             XLSX.utils.book_append_sheet(book, newWorksheet, 'Résultats');
 
-
             setDownloadAvailable(true);
             setLoading(false);
 
@@ -131,14 +129,12 @@ function App() {
 
             const downloadLink = document.createElement('a');
             const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-            const url = URL.createObjectURL(blob);
-            downloadLink.href = url;
+            downloadLink.href = URL.createObjectURL(blob);
             downloadLink.download = fichierDeSortie + '.xlsx';
             downloadLink.click();
-            URL.revokeObjectURL(url);
-
+            URL.revokeObjectURL(downloadLink.href);
           }
-        }
+        };
 
         reader.readAsArrayBuffer(file);
       });
@@ -148,7 +144,9 @@ function App() {
 
   // ============================
 
-  const filterByPhone = () => {
+
+  const filterByPhoneXLS = () => {
+    console.log('START PHONE')
     if (fichierSelectionner.length > 0) {
       setLoading(true);
       setDownloadAvailable(false);
@@ -171,8 +169,21 @@ function App() {
             if (index === 0 && isFirstFile) {
               return true; // Conserver l'en-tête uniquement pour le premier fichier
             } else {
-              const phoneIndex = String(ligne[indexDuHeadPhone]);
-              return inputPhoneValue.some((cp) => phoneIndex.startsWith(cp) && phoneIndex.length <= 10);
+              const phoneIndex = String(ligne[indexDuHeadPhone]).replace(/\s/g, '');
+
+              // return inputPhoneValue.some((cp) => phoneIndex.replace(/\s/g, '').startsWith(cp) && phoneIndex.length == 9) ;
+              if (phoneIndex.length === 9) {
+                return inputPhoneValue.
+                  some((cp) => phoneIndex.startsWith(cp));
+              }
+              else if (phoneIndex.length === 10) {
+                return inputPhoneValue.
+                  some((cp) => {
+                    return phoneIndex[0] ? phoneIndex.slice(1).startsWith(cp) : phoneIndex.startsWith(cp)
+                  }
+                  );
+              }
+
 
             }
           });
@@ -358,11 +369,11 @@ function App() {
   // ================== demarer le fitreer ===================
   const handleStartFiltrer = (event) => {
     if (idTypeDeFiltre === "phone") {
-      filterByPhone();
+      filterByPhoneXLS();
     }
-    else if (idTypeDeFiltre === "postal_code") {
-      filterByPostalCode();
 
+    else if (idTypeDeFiltre === "postal_code") {
+      filterByPostalCodeXLS();
     }
   };
 
@@ -406,7 +417,6 @@ function App() {
           handleDownload={handleDownload}
           loading={loading}
           allFieldsAvailable={allFieldsAvailable}
-          filterByPostalCode={filterByPostalCode}
           inputPhoneValue={inputPhoneValue}
           handleOnChangePhone={handleOnChangePhone}
           inputCPvalue={inputCPvalue}

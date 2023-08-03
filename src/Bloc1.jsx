@@ -16,7 +16,7 @@ function Bloc1({ handleFileSelect, fichierSelectionner, handleFileRemove, handle
       <div className='flex flex-col'>
         <p className='font-semibold text-[15px] pl-7 text-gray-500 mt-2'>👉 Ajouter un ou plusieurs fichiers excels</p>
 
-        <input className='mt-5 px-8 py-0' type="file" multiple onChange={handleFileSelect} />
+        <input className='mt-5 px-8 py-0' type="file" multiple onChange={handleFileSelect} accept=".xls,.xlsx,.csv" />
 
         <div className='max-h-[350px] bg-orange-100 w-full mt-5 overflow-y-auto'>
           <table className="border-collapse w-full">
@@ -30,20 +30,20 @@ function Bloc1({ handleFileSelect, fichierSelectionner, handleFileRemove, handle
               </thead>
             )}
 
-              <tbody className=''>
-                {fichierSelectionner.map((file, index) => (
-                  <tr key={index}>
-                    <td className="border border-r-0 border-l-0 border-blue-300 px-4 py-2 text-center ml-1">{index + 1}</td>
-                    <td className="border border-r-0 border-l-0 border-blue-300 px-4 py-2 text-center">{file.name}</td>
-                    <td className="border border-r-0 border-l-0 border-blue-300 px-4 py-2 text-center pl-[40px]">
-                      <FaTrash
-                        className='text-red-400 cursor-pointer w-5'
-                        onClick={() => handleFileRemove(index)}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+            <tbody className=''>
+              {fichierSelectionner.map((file, index) => (
+                <tr key={index}>
+                  <td className="border border-r-0 border-l-0 border-blue-300 px-4 py-2 text-center ml-1">{index + 1}</td>
+                  <td className="border border-r-0 border-l-0 border-blue-300 px-4 py-2 text-center">{file.name}</td>
+                  <td className="border border-r-0 border-l-0 border-blue-300 px-4 py-2 text-center pl-[40px]">
+                    <FaTrash
+                      className='text-red-400 cursor-pointer w-5'
+                      onClick={() => handleFileRemove(index)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </div>

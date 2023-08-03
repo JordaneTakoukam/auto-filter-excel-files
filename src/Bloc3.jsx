@@ -32,7 +32,6 @@ function Bloc3({
                         handleDownload={handleDownload}
                         loading={loading}
                         allFieldsAvailable={allFieldsAvailable}
-                        filterByPostalCode={filterByPostalCode}
                         inputPhoneValue={inputPhoneValue}
                         inputCPvalue={inputCPvalue}
                         handleOnChangeCP={handleOnChangeCP}
